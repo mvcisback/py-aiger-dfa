@@ -68,13 +68,17 @@ def dfa2aig(dfa):
     in2idx, out2idx, state2idx = create_idx_maps(dfa)
     dfa_dict, _ = dfa2dict(dfa)
 
-    actions = aigerbv.atom(len(in2idx), 'actions', signed=False)
-    states = aigerbv.atom(len(state2idx), 'states', signed=False)
+    actions = aigerbv.atom(len(in2idx), 'action', signed=False)
+    states = aigerbv.atom(len(state2idx), 'state', signed=False)
 
     circ = is_1hot(actions) \
         | out_circ(dfa_dict, state2idx, out2idx, states) \
         | transition_circ(dfa_dict, state2idx, in2idx, actions, states)
+    
+    start = 1 << state2idx[dfa.start]
+    circ = circ.feedback(["state"], ["next_state"], initials=[start])
 
-    # TODO: 
-    #  - Feedback state.
-    return circ, (in2idx.inv, out2idx.inv, state2idx.inv)
+    relabels = {
+        'inputs': in2idx.inv, 'outputs': out2idx.inv, 'states': state2idx.inv
+    }
+    return circ, relabels
