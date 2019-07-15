@@ -1,7 +1,7 @@
-import aigerbv
 from dfa import DFA
 
 from aiger_dfa import dfa2aig
+
 
 def test_to_dfa():
     dfa1 = DFA(
