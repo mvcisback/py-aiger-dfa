@@ -8,4 +8,4 @@ steps:
   - pip install poetry
   - poetry install
   - poetry run pytest --flake8 --cov=aiger_dfa
-  - poetry run codecov
+  - CODECOV_TOKEN="1f3eb804-cfe8-4f87-9e04-efcd3f9739e7" poetry run codecov
