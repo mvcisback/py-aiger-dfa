@@ -6,6 +6,17 @@ Python library for converting between AIG circuits and DFAs.
 [![PyPI version](https://badge.fury.io/py/py-aiger-dfa.svg)](https://badge.fury.io/py/lstar)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+**Table of Contents**
+
+- [Installation](#installation)
+- [Usage](#usage)
+    - [DFA to AIG](#dfa-to-aig)
+    - [AIG to DFA](#aig-to-dfa)
+
+<!-- markdown-toc end -->
+
+
 # Installation
 
 If you just need to use `aiger_dfa`, you can just run:
