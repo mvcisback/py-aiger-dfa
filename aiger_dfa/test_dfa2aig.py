@@ -3,7 +3,7 @@ from dfa import DFA
 from aiger_dfa import dfa2aig
 
 
-def test_to_dfa():
+def test_dfa2aig():
     dfa1 = DFA(
         start=0,
         inputs={0, 1},
