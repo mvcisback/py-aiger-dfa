@@ -16,7 +16,7 @@ attrs = "^19.1"
 bidict = "^0.18.0"
 funcy = "^1.12"
 dfa = "^0.3.2"
-py-aiger-bv = "^0.5.1"
+py-aiger-bv = "^0.5.4"
 py-aiger = "^3.3"
 
 [tool.poetry.dev-dependencies]

@@ -1,11 +1,6 @@
-import operator as op
 from collections import defaultdict
-from itertools import starmap
-from functools import reduce
 
-import aiger
 import aigerbv
-import funcy as fn
 from bidict import bidict
 from dfa import dfa2dict
 
@@ -74,7 +69,7 @@ def dfa2aig(dfa):
     circ = is_1hot(actions) \
         | out_circ(dfa_dict, state2idx, out2idx, states) \
         | transition_circ(dfa_dict, state2idx, in2idx, actions, states)
-    
+
     start = 1 << state2idx[dfa.start]
     circ = circ.feedback(["state"], ["next_state"], initials=[start])
 
