@@ -70,6 +70,8 @@ relabels = {
 }
 ```
 
+where `bidict` refers to https://bidict.readthedocs.io/en/master/. 
+
 ## AIG to DFA
 
 The inverse of `dfa2aig` is `aig2dfa`. Using the same example.
