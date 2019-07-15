@@ -34,7 +34,7 @@ is shown below.
 
 ```python
 from dfa import DFA
-from aiger_dfa import aig2dfa, dfa2aig
+from aiger_dfa import dfa2aig
 
 my_dfa = DFA(
     start=0,
@@ -49,6 +49,24 @@ Now `circ` is an `AIG` and `relabels` is a mapping from the inputs,
 states, and outputs of `my_dfa` to their **1-hot** encoded
 counterparts in `my_aig`.
 
+`relabels` have the following schema:
+
+```python
+relabels = {
+    'inputs': .. , # Bidict from 1-hot index to dfa input.
+    'outputs': .. , # Bidict from 1-hot index to dfa output.
+    'states': .. , # Bidict from 1-hot index to dfa state.
+}
+```
+
 ## AIG to DFA
 
-TODO
+The inverse of `dfa2aig` is `aig2dfa`. Using the same example.
+
+```python
+from aiger_dfa import aig2dfa
+
+my_dfa2 = aig2dfa(my_aig, relabels=relabels)
+
+assert my_dfa2.label((1,0,0,1,1,0)) == my_dfa.label((1,0,0,1,1,0))
+```
