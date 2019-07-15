@@ -60,7 +60,7 @@ Now `circ` is an `AIG` and `relabels` is a mapping from the inputs,
 states, and outputs of `my_dfa` to their **1-hot** encoded
 counterparts in `my_aig`.
 
-`relabels` have the following schema:
+`relabels` has the following schema:
 
 ```python
 relabels = {
