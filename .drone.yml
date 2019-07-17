@@ -4,8 +4,11 @@ name: default
 steps:
 - name: test
   image: python:3.7
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov_token
   commands:
   - pip install poetry
   - poetry install
   - poetry run pytest --flake8 --cov=aiger_dfa
-  - CODECOV_TOKEN="1f3eb804-cfe8-4f87-9e04-efcd3f9739e7" poetry run codecov
+  - poetry run codecov
