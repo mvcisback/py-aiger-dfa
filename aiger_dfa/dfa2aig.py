@@ -7,7 +7,8 @@ from dfa import dfa2dict
 
 def _masks2circ(io_list, in2idx, out2idx, ins):
     inv_map = defaultdict(lambda: 0)
-    for in_idx, out_idx in io_list:
+    for in_name, out_name in io_list:
+        in_idx, out_idx = in2idx[in_name], out2idx[out_name]
         inv_map[out_idx] |= (1 << in_idx)
 
     wordlen = len(out2idx)
