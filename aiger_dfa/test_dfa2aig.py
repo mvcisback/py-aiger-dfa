@@ -24,3 +24,10 @@ def test_dfa2aig():
         assert out['valid'] == (True,)
         label = relabels['outputs'][out['output'].index(True)]
         assert dfa1.label((1,)*i) == label
+
+    # One invalid input should invalidate the run.
+    out, state = simulator.send({'action': 3})
+    assert out['valid'] == (False,)
+    for i in range(5):
+        out, state = simulator.send({'action': 2})
+        assert out['valid'] == (False,)

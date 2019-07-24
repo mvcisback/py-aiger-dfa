@@ -4,9 +4,11 @@ from dfa import DFA
 def aig2dfa(circ, relabels=None,
             action_str='action',
             output_str='output',
-            state_str='state'):
-    assert len(circ.inputs) == len(circ.latches) == 1
+            state_str='state',
+            valid_str='valid'):
+    assert len(circ.inputs) == 1
     assert len(circ.outputs) == 2
+    assert 1 <= len(circ.latches) <= 2
 
     imap, omap = dict(circ.input_map), dict(circ.output_map)
     inputs = range(len(imap[action_str]))

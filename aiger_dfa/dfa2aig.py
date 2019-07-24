@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import aigerbv
+import aiger_ptltl
 from bidict import bidict
 from dfa import dfa2dict
 
@@ -60,6 +61,14 @@ def is_1hot(x):
     return test.aigbv['o', {test.output: 'valid'}]
 
 
+def valid_circ(actions):
+    onehot_tester = is_1hot(actions)
+    hist_prop = aiger_ptltl.atom('valid').historically()
+
+    circ = onehot_tester >> aigerbv.aig2aigbv(hist_prop.aig)
+    return circ['o', {hist_prop.output: 'valid'}]
+
+
 def dfa2aig(dfa):
     in2idx, out2idx, state2idx = create_idx_maps(dfa)
     dfa_dict, _ = dfa2dict(dfa)
@@ -67,7 +76,7 @@ def dfa2aig(dfa):
     actions = aigerbv.atom(len(in2idx), 'action', signed=False)
     states = aigerbv.atom(len(state2idx), 'state', signed=False)
 
-    circ = is_1hot(actions) \
+    circ = valid_circ(actions) \
         | out_circ(dfa_dict, state2idx, out2idx, states) \
         | transition_circ(dfa_dict, state2idx, in2idx, actions, states)
 
