@@ -53,7 +53,7 @@ my_dfa = DFA(
     label=lambda s: (s % 4) == 3,
     transition=lambda s, c: (s + c) % 4,
 )
-my_aig, relabels = dfa2aig(my_dfa)
+my_aig, relabels, valid = dfa2aig(my_dfa)
 ```
 
 Now `circ` is an `AIG` and `relabels` is a mapping from the inputs,
@@ -70,7 +70,9 @@ relabels = {
 }
 ```
 
-where `bidict` refers to https://bidict.readthedocs.io/en/master/. 
+where `bidict` refers to https://bidict.readthedocs.io/en/master/.
+Finally, `valid` is another aiger circuit which tests if all inputs
+are 1-hot encoded.
 
 ## AIG to DFA
 

@@ -10,24 +10,41 @@ def test_dfa2aig():
         label=lambda s: (s % 4) == 3,
         transition=lambda s, c: (s + c) % 4,
     )
-    circ, relabels = dfa2aig(dfa1)
+    circ, relabels, valid = dfa2aig(dfa1)
     simulator = circ.simulator()
+    vsimulator = valid.simulator()
     next(simulator)
+    next(vsimulator)
+
+    in2bv = relabels['inputs'].inv
+
+    def step(action):
+        action_bv = in2bv[action]
+
+        vout, _ = vsimulator.send({'action': action_bv})
+        is_valid = vout['valid'][0]
+
+        out, lout = simulator.send({'action': action_bv})
+        label = relabels['outputs'][out['output']]
+        return label, is_valid, lout['state']
+
+    prev_state = circ.latch2init['state']
     for i in range(5):
-        out, _ = simulator.send({'action': 1})
-        assert out['valid'] == (True,)
-        label = relabels['outputs'][out['output'].index(True)]
+        label, valid, state = step(0)
+        assert valid
+        assert state == prev_state
         assert dfa1.label((0,)*i) == label
 
     for i in range(5):
-        out, state = simulator.send({'action': 2})
-        assert out['valid'] == (True,)
-        label = relabels['outputs'][out['output'].index(True)]
+        label, valid, state = step(1)
+        assert valid
         assert dfa1.label((1,)*i) == label
 
     # One invalid input should invalidate the run.
-    out, state = simulator.send({'action': 3})
-    assert out['valid'] == (False,)
+
+    vout, _ = vsimulator.send({'action': (True, True)})
+    assert not vout['valid'][0]
+
     for i in range(5):
-        out, state = simulator.send({'action': 2})
-        assert out['valid'] == (False,)
+        _, valid, _ = step(0)
+        assert not valid

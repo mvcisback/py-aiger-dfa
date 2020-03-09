@@ -11,14 +11,14 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 attrs = "^19.1"
 bidict = "^0.18.0"
 funcy = "^1.12"
 dfa = "^0.3.2"
-py-aiger-bv = "^0.5.6"
-py-aiger = "^3.3"
-py-aiger-ptltl = "^0.1.1"
+py-aiger = "^3.9.2"
+py-aiger-bv = "^1.4.0"
+py-aiger-ptltl = "^1.1.0"
 
 
 [tool.poetry.dev-dependencies]

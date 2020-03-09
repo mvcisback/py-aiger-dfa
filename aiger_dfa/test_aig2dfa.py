@@ -10,7 +10,7 @@ def test_dfa2aig():
         label=lambda s: (s % 4) == 3,
         transition=lambda s, c: (s + c) % 4,
     )
-    circ, relabels = dfa2aig(dfa1)
+    circ, relabels, _ = dfa2aig(dfa1)
     dfa2 = aig2dfa(circ, relabels)
     for i in range(5):
         word = (0,)*i
@@ -25,7 +25,7 @@ def test_dfa2aig_smoke():
         'foo': (False, {'a': 'foo', 'b': 'bar'}),
         'bar': (True, {'a': 'foo', 'b': 'foo'})
     }, 'foo')
-    circ1, start = dfa2aig(dfa1)
+    circ1, start, _ = dfa2aig(dfa1)
     dfa2 = aig2dfa(circ1, start)
 
     test = ('a', 'b', 'a', 'a', 'b')

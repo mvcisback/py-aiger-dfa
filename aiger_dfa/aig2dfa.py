@@ -1,40 +1,63 @@
+import aiger_bv as BV
 from dfa import DFA
 
+from aiger_dfa.utils import onehot
 
-def aig2dfa(circ, relabels=None,
-            action_str='action',
-            output_str='output',
-            state_str='state',
-            valid_str='valid'):
+
+def aig2dfa(
+        circ: BV.AIGBV,
+        relabels=None,
+        action_str='action',
+        output_str='output',
+        state_str='state',
+) -> DFA:
+    """
+    Converts an aiger_bv.AIGBV circuit into a dfa.DFA object.
+
+    The AIGBV circuit must have exactly 1 input, output, and latch
+    which have names given by action_str, output_str, and state_str
+    resp.
+
+    relabels is dictionary with at least two entries, "inputs" and
+    "outputs".
+
+    - Each entry of relabels is a bidict that maps one-hot encoded
+      tuples, e.g. (True, False, False), to dfa inputs/outputs.
+    """
+
     assert len(circ.inputs) == 1
-    assert len(circ.outputs) == 2
-    assert 1 <= len(circ.latches) <= 2
+    assert len(circ.outputs) == 1
+    assert len(circ.latches) == 1
 
-    imap, omap = dict(circ.input_map), dict(circ.output_map)
-    inputs = range(len(imap[action_str]))
-    outputs = range(len(omap[output_str]))
+    dummy_action = onehot(0, circ.imap[action_str].size)
+
+    def run(state, action=None):
+        if action is None:
+            action = dummy_action
+        elif relabels is not None:
+            action = relabels['inputs'].inv[action]
+
+        out, lout = circ({action_str: action}, latches={state_str: state})
+
+        output = out[output_str]
+        state2 = lout[state_str]
+
+        output = output if relabels is None else relabels['outputs'][output]
+        return output, state2
 
     if relabels is not None:
-        inputs = map(relabels['inputs'].get, inputs)
-        outputs = map(relabels['outputs'].get, outputs)
-
-    l2init = dict(circ.aig.latch2init)
-    start = tuple(l2init[l] for l in dict(circ.latch_map)[state_str])
-
-    def label(s):
-        circ_out, _ = circ({action_str: 1}, latches={state_str: s})
-        output = circ_out[output_str].index(True)
-        return output if relabels is None else relabels['outputs'][output]
-
-    def transition(s, c):
-        if relabels is not None:
-            c = relabels['inputs'].inv[c]
-
-        # Note: input is 1-hot encoded.
-        _, circ_state = circ({action_str: 1 << c}, latches={state_str: s})
-        return circ_state[state_str]
+        inputs = relabels['inputs'].values()
+        outputs = relabels['outputs'].values()
+    else:
+        imap, omap = circ.imap, circ.omap
+        isize, osize = imap[action_str].size, omap[output_str].size
+        inputs = {onehot(i, isize) for i in range(isize)}
+        outputs = {onehot(i, osize) for i in range(osize)}
 
     return DFA(
-        start=start, inputs=inputs, outputs=outputs,
-        label=label, transition=transition,
+        start=circ.latch2init[state_str],
+        inputs=inputs,
+        outputs=outputs,
+        label=lambda s: run(s)[0],
+        transition=lambda s, a: run(s, a)[1],
     )
