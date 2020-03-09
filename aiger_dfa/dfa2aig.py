@@ -1,3 +1,5 @@
+__all__ = ["dfa2aig"]
+
 import aiger_bv
 import aiger_bv as BV
 import aiger_ptltl as PLTL

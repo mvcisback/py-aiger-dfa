@@ -2,6 +2,7 @@
 Python library for converting between AIG circuits and DFAs.
 
 [![Build Status](https://cloud.drone.io/api/badges/mvcisback/py-aiger-dfa/status.svg)](https://cloud.drone.io/mvcisback/py-aiger-dfa)
+[![Docs](https://img.shields.io/badge/API-link-color)](https://mvcisback.github.io/py-aiger-dfa)
 [![codecov](https://codecov.io/gh/mvcisback/py-aiger-dfa/branch/master/graph/badge.svg)](https://codecov.io/gh/mvcisback/py-aiger-dfa)
 [![PyPI version](https://badge.fury.io/py/py-aiger-dfa.svg)](https://badge.fury.io/py/py-aiger-dfa)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -64,9 +65,9 @@ counterparts in `my_aig`.
 
 ```python
 relabels = {
-    'inputs': .. , # Bidict from 1-hot index to dfa input.
-    'outputs': .. , # Bidict from 1-hot index to dfa output.
-    'states': .. , # Bidict from 1-hot index to dfa state.
+    'inputs': .. , # Bidict from 1-hot encoded tuple to dfa input.
+    'outputs': .. , # Bidict from 1-hot encoded tuple to dfa output.
+    'states': .. , # Bidict from 1-hot encoded tuple to dfa state.
 }
 ```
 

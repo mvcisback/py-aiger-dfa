@@ -1,3 +1,5 @@
+__all__ = ["aig2dfa"]
+
 import aiger_bv as BV
 from dfa import DFA
 
