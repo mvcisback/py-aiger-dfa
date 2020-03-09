@@ -336,8 +336,8 @@ category = "main"
 description = "Library for generating (p)ast (t)ense (l)inear (t)emporal (l)ogic monitors as aiger circuits."
 name = "py-aiger-ptltl"
 optional = false
-python-versions = ">=3.7,<4.0"
-version = "1.1.0"
+python-versions = ">=3.6,<4.0"
+version = "1.1.1"
 
 [package.dependencies]
 py-aiger = ">=3.9,<4.0"
@@ -548,7 +548,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "d657e7b7c4c75d68f69375af728bd03aee2696ac9c2bfe46dae65c6202158726"
+content-hash = "be34dbc119b3b355837c3c042165cf14b9c85c76872e31d0d910ba8257a3db03"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -727,8 +727,8 @@ py-aiger-bv = [
     {file = "py_aiger_bv-1.4.0-py3-none-any.whl", hash = "sha256:eb86debff59b6ed79b343a40623217dd4b31f1fc58350465bffceb1b0001f579"},
 ]
 py-aiger-ptltl = [
-    {file = "py-aiger-ptltl-1.1.0.tar.gz", hash = "sha256:d28ebe2fb9122be95bb1cf030d2ee2fd22fc3aae2ed8bd1c866efb2923863589"},
-    {file = "py_aiger_ptltl-1.1.0-py3-none-any.whl", hash = "sha256:2c7b547fd366a7838082cb1fd317255a0f265c122f6e8018e20af626d1e5d57d"},
+    {file = "py-aiger-ptltl-1.1.1.tar.gz", hash = "sha256:f48fc9c235a0c26ab13d27f1348c13eb0049c22557a5a537e0473d5a26837eb5"},
+    {file = "py_aiger_ptltl-1.1.1-py3-none-any.whl", hash = "sha256:96a35fd32726924045ececbbd3f625fb6028c80b5a35631cd8513367536913f2"},
 ]
 pycodestyle = [
     {file = "pycodestyle-2.5.0-py2.py3-none-any.whl", hash = "sha256:95a2219d12372f05704562a14ec30bc76b05a5b297b21a5dfe3f6fac3491ae56"},

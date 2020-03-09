@@ -18,7 +18,7 @@ funcy = "^1.12"
 dfa = "^0.3.2"
 py-aiger = "^3.9.2"
 py-aiger-bv = "^1.4.0"
-py-aiger-ptltl = "^1.1.0"
+py-aiger-ptltl = "^1.1"
 
 
 [tool.poetry.dev-dependencies]
