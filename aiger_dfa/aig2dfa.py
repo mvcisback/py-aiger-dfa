@@ -1,65 +1,70 @@
-__all__ = ["aig2dfa"]
+from __future__ import annotations
+
+from itertools import product, repeat
+from typing import Any, Union, Optional, Tuple, Mapping, Literal
 
 import aiger_bv as BV
+from bidict import bidict
 from dfa import DFA
+from pyrsistent import pmap
+from pyrsistent.typing import PMap
 
-from aiger_dfa.utils import onehot
+
+Kinds = Union[Literal['inputs'], Literal['outputs'], Literal['states']]
+Encoding = Mapping[str, bidict]  # Bijective Mapping[str, bitvector]]
+Encodings = Mapping[Kinds, Encoding]
+State = Tuple[PMap[str, Any], PMap[str, Any]]  # (prev_output, latch_val).
+
+
+def alphabet(enc: Encoding, add_None=False):
+    flatten = (zip(repeat(k), v.keys()) for k, v in enc.items())
+    yield from map(pmap, product(*flatten))
+
+    if add_None:
+        yield None
+
+
+def default_encoding(bundle_map):
+    enc = {}
+    for name, size in bundle_map:
+        enc[name] = {i: i for i in range(1 << size)}
+    return enc
 
 
 def aig2dfa(
         circ: BV.AIGBV,
-        relabels=None,
-        action_str='action',
-        output_str='output',
-        state_str='state',
+        relabels: Encodings = pmap(),
+        initial_label: Optional[Any] = None,
 ) -> DFA:
     """
-    Converts an aiger_bv.AIGBV circuit into a dfa.DFA object.
+    Converts an AIG circuit into a dfa.DFA object.
 
-    The AIGBV circuit must have exactly 1 input, output, and latch
-    which have names given by action_str, output_str, and state_str
-    resp.
+    Note that circuits are generally Mealy Machines
+       - i.e., label depends on input & state.
 
-    relabels is dictionary with at least two entries, "inputs" and
-    "outputs".
+    The returned DFA is the Moore machine encoding of this Mealy
+    Machine. This means that the state includes the previous output.
 
-    - Each entry of relabels is a bidict that maps one-hot encoded
-      tuples, e.g. (True, False, False), to dfa inputs/outputs.
+    If the initial output is not included, the initial label is None.
     """
+    if 'inputs' not in relabels:
+        relabels = relabels.set('inputs', default_encoding(circ.imap))
+    if 'outputs' not in relabels:
+        relabels = relabels.set('outputs', default_encoding(circ.omap))
 
-    assert len(circ.inputs) == 1
-    assert len(circ.outputs) == 1
-    assert len(circ.latches) == 1
-
-    dummy_action = onehot(0, circ.imap[action_str].size)
-
-    def run(state, action=None):
-        if action is None:
-            action = dummy_action
-        elif relabels is not None:
-            action = relabels['inputs'].inv[action]
-
-        out, lout = circ({action_str: action}, latches={state_str: state})
-
-        output = out[output_str]
-        state2 = lout[state_str]
-
-        output = output if relabels is None else relabels['outputs'][output]
-        return output, state2
-
-    if relabels is not None:
-        inputs = relabels['inputs'].values()
-        outputs = relabels['outputs'].values()
-    else:
-        imap, omap = circ.imap, circ.omap
-        isize, osize = imap[action_str].size, omap[output_str].size
-        inputs = {onehot(i, isize) for i in range(isize)}
-        outputs = {onehot(i, osize) for i in range(osize)}
+    def transition(state, action):
+        action = {k: relabels['inputs'][k][v] for k, v in action.items()}
+        omap, lmap = circ(action, latches=state[1])
+        omap = {k: relabels['outputs'][k].inv[v] for k, v in omap.items()}
+        return pmap(omap), pmap(lmap)
 
     return DFA(
-        start=circ.latch2init[state_str],
-        inputs=inputs,
-        outputs=outputs,
-        label=lambda s: run(s)[0],
-        transition=lambda s, a: run(s, a)[1],
+        start=(initial_label, pmap(circ.latch2init)),
+        inputs=alphabet(relabels['inputs']),
+        outputs=alphabet(relabels['outputs'], add_None=initial_label is None),
+        label=lambda s: s[0],
+        transition=transition,
     )
+
+
+__all__ = ["aig2dfa", "State"]

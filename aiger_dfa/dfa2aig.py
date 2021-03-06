@@ -20,9 +20,11 @@ def dfa2aig(dfa: DFA):
     2. A dictionary with at three entries, "inputs", "outputs", and
     "states".
 
-      - Each entry of this dictionary is a bidict that maps one-hot
+      - Each entry is a nested dictionary.
+      - The first dictionary maps input/output/state names to encodings.
+      - The encoding dictionary is a bidict that maps one-hot
         encoded tuples, e.g. (True, False, False), to dfa inputs,
-        outputs, states.
+        outputs, states. 
 
     3. An aiger_bv.AIGBV circuit which monitors is all inputs are
        valid, e.g., one_hot encoded.
@@ -30,8 +32,8 @@ def dfa2aig(dfa: DFA):
     in2bv, out2bv, state2bv = create_bv_maps(dfa)
     dfa_dict, _ = dfa2dict(dfa)
 
-    action = aiger_bv.atom(len(dfa.inputs), 'action', signed=False)
-    state = aiger_bv.atom(len(dfa.states()), 'state', signed=False)
+    action = BV.uatom(len(dfa.inputs), 'action')
+    state = BV.uatom(len(dfa.states()), 'state')
 
     circ = out_circ(dfa_dict, state2bv, out2bv, state)
     circ |= transition_circ(dfa_dict, state2bv, in2bv, action, state)
@@ -44,7 +46,9 @@ def dfa2aig(dfa: DFA):
     })
 
     relabels = {
-        'inputs': in2bv.inv, 'outputs': out2bv.inv, 'states': state2bv.inv
+        'inputs': {'action': in2bv},
+        'outputs': {'output': out2bv},
+        'states': {'state': state2bv},
     }
 
     return circ, relabels, valid_circ(action)

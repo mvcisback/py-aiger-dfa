@@ -1,4 +1,5 @@
 from dfa import DFA, dict2dfa
+from pyrsistent import pmap
 
 from aiger_dfa import dfa2aig, aig2dfa
 
@@ -12,12 +13,14 @@ def test_dfa2aig():
     )
     circ, relabels, _ = dfa2aig(dfa1)
     dfa2 = aig2dfa(circ, relabels)
-    for i in range(5):
+    for i in range(1, 5):
         word = (0,)*i
-        assert dfa1.label(word) == dfa2.label(word)
+        word2 = (pmap({'action': 0}),)*(i + 1)
+        assert dfa1.label(word) == dfa2.label(word2)['output']
 
         word = (1,)*i
-        assert dfa1.label(word) == dfa2.label(word)
+        word2 = (pmap({'action': 1}),)*(i + 1)
+        assert dfa1.label(word) == dfa2.label(word2)['output']
 
 
 def test_dfa2aig_smoke():
@@ -29,4 +32,5 @@ def test_dfa2aig_smoke():
     dfa2 = aig2dfa(circ1, start)
 
     test = ('a', 'b', 'a', 'a', 'b')
-    assert dfa1.label(test) == dfa2.label(test)
+    test2 = tuple(pmap({'action': x}) for x in test) + (pmap({'action': 'a'}),)
+    assert dfa1.label(test) == dfa2.label(test2)['output']

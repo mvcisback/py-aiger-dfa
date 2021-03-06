@@ -16,7 +16,7 @@ def test_dfa2aig():
     next(simulator)
     next(vsimulator)
 
-    in2bv = relabels['inputs'].inv
+    in2bv = relabels['inputs']['action']
 
     def step(action):
         action_bv = in2bv[action]
@@ -25,7 +25,7 @@ def test_dfa2aig():
         is_valid = vout['valid'][0]
 
         out, lout = simulator.send({'action': action_bv})
-        label = relabels['outputs'][out['output']]
+        label = relabels['outputs']['output'].inv[out['output']]
         return label, is_valid, lout['state']
 
     prev_state = circ.latch2init['state']

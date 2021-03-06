@@ -19,6 +19,7 @@ dfa = "^2.0.0"
 py-aiger = "^6.0.0"
 py-aiger-bv = "^4.0.0"
 py-aiger-ptltl = "^3.0.0"
+pyrsistent = "^0.17.3"
 
 
 [tool.poetry.dev-dependencies]
