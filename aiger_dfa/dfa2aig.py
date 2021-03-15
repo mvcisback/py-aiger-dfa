@@ -5,6 +5,7 @@ import aiger_bv as BV
 import aiger_ptltl as PLTL
 from bidict import bidict
 from dfa import dfa2dict, DFA
+from pyrsistent import pmap
 
 from aiger_dfa.utils import onehot
 
@@ -46,9 +47,9 @@ def dfa2aig(dfa: DFA):
     })
 
     relabels = {
-        'inputs': {'action': in2bv},
-        'outputs': {'output': out2bv},
-        'states': {'state': state2bv},
+        'inputs': {k: pmap({'action': v}) for k, v in in2bv.items()},
+        'outputs': {pmap({'output': v}): k for k, v in out2bv.items()},
+        'states': {k: pmap({'state':v }) for k, v in state2bv.items()},
     }
 
     return circ, relabels, valid_circ(action)

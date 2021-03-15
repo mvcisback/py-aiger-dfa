@@ -3,11 +3,14 @@ from __future__ import annotations
 from itertools import product, repeat
 from typing import Any, Union, Optional, Tuple, Mapping, Literal
 
+import aiger
 import aiger_bv as BV
 from bidict import bidict
 from dfa import DFA
 from pyrsistent import pmap
 from pyrsistent.typing import PMap
+
+from aiger_dfa.utils import onehot
 
 
 Kinds = Union[Literal['inputs'], Literal['outputs'], Literal['states']]
@@ -16,18 +19,15 @@ Encodings = Mapping[Kinds, Encoding]
 State = Tuple[PMap[str, Any], PMap[str, Any]]  # (prev_output, latch_val).
 
 
-def alphabet(enc: Encoding, add_None=False):
-    flatten = (zip(repeat(k), v.keys()) for k, v in enc.items())
-    yield from map(pmap, product(*flatten))
-
-    if add_None:
-        yield None
-
-
-def default_encoding(bundle_map):
+def default_encoding(bmap, is_output=False):
     enc = {}
-    for name, size in bundle_map:
-        enc[name] = {i: i for i in range(1 << size)}
+    flatten = (zip(repeat(k), range(1 << size)) for k, size in bmap.items())
+    for elems in product(*flatten):
+        decoded = pmap({
+            k: tuple(BV.encode_int(bmap[k].size, v, signed=False))
+            for k, v in elems
+        })
+        enc[decoded]= decoded
     return enc
 
 
@@ -47,21 +47,28 @@ def aig2dfa(
 
     If the initial output is not included, the initial label is None.
     """
+    if isinstance(circ, aiger.AIG):
+        circ = BV.aig2aigbv(circ)
+
     if 'inputs' not in relabels:
         relabels = relabels.set('inputs', default_encoding(circ.imap))
     if 'outputs' not in relabels:
         relabels = relabels.set('outputs', default_encoding(circ.omap))
 
     def transition(state, action):
-        action = {k: relabels['inputs'][k][v] for k, v in action.items()}
+        action = relabels['inputs'][action]
         omap, lmap = circ(action, latches=state[1])
-        omap = {k: relabels['outputs'][k].inv[v] for k, v in omap.items()}
-        return pmap(omap), pmap(lmap)
+        output = relabels['outputs'][pmap(omap)]
+        return output, pmap(lmap)
+
+    outputs = set(relabels['outputs'].values())
+    if initial_label is None:
+        outputs.add(None)
 
     return DFA(
         start=(initial_label, pmap(circ.latch2init)),
-        inputs=alphabet(relabels['inputs']),
-        outputs=alphabet(relabels['outputs'], add_None=initial_label is None),
+        inputs=relabels['inputs'].keys(),
+        outputs=outputs,
         label=lambda s: s[0],
         transition=transition,
     )

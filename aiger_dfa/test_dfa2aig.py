@@ -1,4 +1,5 @@
 from dfa import DFA
+from pyrsistent import pmap
 
 from aiger_dfa import dfa2aig
 
@@ -16,16 +17,16 @@ def test_dfa2aig():
     next(simulator)
     next(vsimulator)
 
-    in2bv = relabels['inputs']['action']
+    in2bv = relabels['inputs']
 
     def step(action):
         action_bv = in2bv[action]
 
-        vout, _ = vsimulator.send({'action': action_bv})
+        vout, _ = vsimulator.send(action_bv)
         is_valid = vout['valid'][0]
 
-        out, lout = simulator.send({'action': action_bv})
-        label = relabels['outputs']['output'].inv[out['output']]
+        out, lout = simulator.send(action_bv)
+        label = relabels['outputs'][pmap(out)]
         return label, is_valid, lout['state']
 
     prev_state = circ.latch2init['state']
