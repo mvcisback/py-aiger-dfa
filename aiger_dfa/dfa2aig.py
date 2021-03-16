@@ -49,7 +49,7 @@ def dfa2aig(dfa: DFA):
     relabels = {
         'inputs': {k: pmap({'action': v}) for k, v in in2bv.items()},
         'outputs': {pmap({'output': v}): k for k, v in out2bv.items()},
-        'states': {k: pmap({'state':v }) for k, v in state2bv.items()},
+        'states': {k: pmap({'state': v}) for k, v in state2bv.items()},
     }
 
     return circ, relabels, valid_circ(action)
