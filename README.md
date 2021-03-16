@@ -65,24 +65,31 @@ counterparts in `my_aig`.
 
 ```python
 relabels = {
-    'inputs': .. , # Bidict from 1-hot encoded tuple to dfa input.
-    'outputs': .. , # Bidict from 1-hot encoded tuple to dfa output.
-    'states': .. , # Bidict from 1-hot encoded tuple to dfa state.
+    'inputs': .. , #  Mapping from input alphabet -> py-aiger input.
+    'outputs': .. , # Mapping from py-aiger output -> output alphabet.
+    'states': .. , # Mapping from state space -> py-aiger latches.
 }
 ```
 
-where `bidict` refers to https://bidict.readthedocs.io/en/master/.
 Finally, `valid` is another aiger circuit which tests if all inputs
 are 1-hot encoded.
 
 ## AIG to DFA
 
-The inverse of `dfa2aig` is `aig2dfa`. Using the same example.
+We also support converting a sequential circuit (AIG) to a [Moore
+Machine](https://en.wikipedia.org/wiki/Moore_machine) (DFA) using
+`aig2dfa`. Using the same example:
 
 ```python
 from aiger_dfa import aig2dfa
 
 my_dfa2 = aig2dfa(my_aig, relabels=relabels)
-
-assert my_dfa2.label((1,0,0,1,1,0)) == my_dfa.label((1,0,0,1,1,0))
 ```
+
+Note that the output of a sequential circuit (AIG) is dependent on the
+state **AND** the action (a [Mealy
+Machine](https://en.wikipedia.org/wiki/Mealy_machine)). 
+
+We use the standard Mealy ↦ Moore reduction where one introduces a
+1-step delay on the output. The default initial output is `None`, but
+can be set using the `initial_label` argument.

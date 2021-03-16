@@ -23,9 +23,9 @@ def dfa2aig(dfa: DFA):
 
       - Each entry is a nested dictionary.
       - The first dictionary maps input/output/state names to encodings.
-      - The encoding dictionary is a bidict that maps one-hot
-        encoded tuples, e.g. (True, False, False), to dfa inputs,
-        outputs, states. 
+      - The encoding dictionary is mapping to/from dfa inputs,
+        outputs, states and the corresponding aiger inputs, outputs,
+        latches.
 
     3. An aiger_bv.AIGBV circuit which monitors is all inputs are
        valid, e.g., one_hot encoded.

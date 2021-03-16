@@ -10,8 +10,6 @@ from dfa import DFA
 from pyrsistent import pmap
 from pyrsistent.typing import PMap
 
-from aiger_dfa.utils import onehot
-
 
 Kinds = Union[Literal['inputs'], Literal['outputs'], Literal['states']]
 Encoding = Mapping[str, bidict]  # Bijective Mapping[str, bitvector]]
@@ -27,7 +25,7 @@ def default_encoding(bmap, is_output=False):
             k: tuple(BV.encode_int(bmap[k].size, v, signed=False))
             for k, v in elems
         })
-        enc[decoded]= decoded
+        enc[decoded] = decoded
     return enc
 
 
@@ -42,10 +40,16 @@ def aig2dfa(
     Note that circuits are generally Mealy Machines
        - i.e., label depends on input & state.
 
-    The returned DFA is the Moore machine encoding of this Mealy
-    Machine. This means that the state includes the previous output.
-
     If the initial output is not included, the initial label is None.
+
+    Relabels is an optional mapping with 'inputs' and 'outputs' keys.
+     - 'inputs' indexes a mapping from dfa inputs to (pmap) aiger inputs.
+     - 'outputs' indexes a mapping from (pmap) aiger outputs to dfa outputs.
+     - pmap = pyrsistent.pmap
+
+    Returns:
+      A returned DFA is the Moore machine encoding of this Mealy
+      Machine. This means that the state includes the previous output.
     """
     if isinstance(circ, aiger.AIG):
         circ = BV.aig2aigbv(circ)
