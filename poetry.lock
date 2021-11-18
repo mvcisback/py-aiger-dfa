@@ -49,7 +49,7 @@ toml = ["toml"]
 
 [[package]]
 name = "dfa"
-version = "2.3.1"
+version = "4.1.0"
 description = "Python library for modeling DFAs, Moore Machines, and Transition Systems."
 category = "main"
 optional = false
@@ -57,6 +57,7 @@ python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
 attrs = ">=21.0.0,<22.0.0"
+bidict = ">=0.21.4,<0.22.0"
 funcy = ">=1.12,<2.0"
 lazytree = ">=0.3.1,<0.4.0"
 pytest-xdist = ">=2.1.0,<3.0.0"
@@ -179,14 +180,14 @@ python-versions = "*"
 
 [[package]]
 name = "packaging"
-version = "21.2"
+version = "21.3"
 description = "Core utilities for Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-pyparsing = ">=2.0.2,<3"
+pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "parsimonious"
@@ -294,11 +295,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pyparsing"
-version = "2.4.7"
+version = "3.0.6"
 description = "Python parsing module"
 category = "main"
 optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+python-versions = ">=3.6"
+
+[package.extras]
+diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyrsistent"
@@ -434,7 +438,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "40c5f3ed2b7e0bbde8874dfedbb8a47bd800df3b04d09a5751eecf1ced9b527c"
+content-hash = "c0ba315d34030cc34bfd561a1a2f194d085afbaaed05adae8194e33108c90eed"
 
 [metadata.files]
 atomicwrites = [
@@ -508,8 +512,8 @@ coverage = [
     {file = "coverage-5.5.tar.gz", hash = "sha256:ebe78fe9a0e874362175b02371bdfbee64d8edc42a044253ddf4ee7d3c15212c"},
 ]
 dfa = [
-    {file = "dfa-2.3.1-py3-none-any.whl", hash = "sha256:b9366c378b731229f36fd47615561e9bfbc03b2e0b5a3d70125482308b9f6353"},
-    {file = "dfa-2.3.1.tar.gz", hash = "sha256:fc6bd6f7a7d904874f77ea5c99609dad12ecaefc89baf006a50b152339115905"},
+    {file = "dfa-4.1.0-py3-none-any.whl", hash = "sha256:17f210da1ff3ef3e00ae0802bc933570640512f8aefdcf67bfc6afa8fcf39c91"},
+    {file = "dfa-4.1.0.tar.gz", hash = "sha256:5944ab9ef57adabfe46fe9433ae6b14fc344b2b6295b83e18ed4d4500ce49da8"},
 ]
 execnet = [
     {file = "execnet-1.9.0-py2.py3-none-any.whl", hash = "sha256:a295f7cc774947aac58dde7fdc85f4aa00c42adf5d8f5468fc630c1acf30a142"},
@@ -619,8 +623,8 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 packaging = [
-    {file = "packaging-21.2-py3-none-any.whl", hash = "sha256:14317396d1e8cdb122989b916fa2c7e9ca8e2be9e8060a6eff75b6b7b4d8a7e0"},
-    {file = "packaging-21.2.tar.gz", hash = "sha256:096d689d78ca690e4cd8a89568ba06d07ca097e3306a4381635073ca91479966"},
+    {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
+    {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
 ]
 parsimonious = [
     {file = "parsimonious-0.8.1.tar.gz", hash = "sha256:3add338892d580e0cb3b1a39e4a1b427ff9f687858fdd61097053742391a9f6b"},
@@ -657,8 +661,8 @@ pyflakes = [
     {file = "pyflakes-2.4.0.tar.gz", hash = "sha256:05a85c2872edf37a4ed30b0cce2f6093e1d0581f8c19d7393122da7e25b2b24c"},
 ]
 pyparsing = [
-    {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
-    {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
+    {file = "pyparsing-3.0.6-py3-none-any.whl", hash = "sha256:04ff808a5b90911829c55c4e26f75fa5ca8a2f5f36aa3a51f68e27033341d3e4"},
+    {file = "pyparsing-3.0.6.tar.gz", hash = "sha256:d9bdec0013ef1eb5a84ab39a3b3868911598afa494f5faa038647101504e2b81"},
 ]
 pyrsistent = [
     {file = "pyrsistent-0.18.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:f4c8cabb46ff8e5d61f56a037974228e978f26bfefce4f61a4b1ac0ba7a2ab72"},
