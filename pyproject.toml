@@ -17,7 +17,7 @@ bidict = "^0.21.0"
 funcy = "^1.12"
 dfa = "^4"
 py-aiger = "^6.0.0"
-py-aiger-bv = "^4.0.0"
+py-aiger-bv = "^4.7.4"
 py-aiger-ptltl = "^3.0.0"
 pyrsistent = "^0.18"
 

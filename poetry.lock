@@ -251,7 +251,7 @@ toposort = ">=1.5,<2.0"
 
 [[package]]
 name = "py-aiger-bv"
-version = "4.7.3"
+version = "4.7.4"
 description = "A python library for manipulating sequential and-inverter gates."
 category = "main"
 optional = false
@@ -438,7 +438,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "c0ba315d34030cc34bfd561a1a2f194d085afbaaed05adae8194e33108c90eed"
+content-hash = "d508380a1938e4d064e41bc6ac8460630be53d9bda067b4c40640a21ab9ef432"
 
 [metadata.files]
 atomicwrites = [
@@ -645,8 +645,8 @@ py-aiger = [
     {file = "py_aiger-6.1.20-py3-none-any.whl", hash = "sha256:143ae00987d84041782585e1c96848bcb91a55681095cb24e5fbb471e66a9a27"},
 ]
 py-aiger-bv = [
-    {file = "py-aiger-bv-4.7.3.tar.gz", hash = "sha256:25bf47aa7741ea7d9b1e667f460b40add578db29715eb668e824d90884f910f2"},
-    {file = "py_aiger_bv-4.7.3-py3-none-any.whl", hash = "sha256:708bb82f5368da5d44dd87d8261189e330d63164f1e8a9d9c3a545214dc81ed6"},
+    {file = "py-aiger-bv-4.7.4.tar.gz", hash = "sha256:4fbfde1498b54fd6d1b707fd16ba495034935d83c78916ed088fbc05d2f13b50"},
+    {file = "py_aiger_bv-4.7.4-py3-none-any.whl", hash = "sha256:f3a74c221dbba563fa9cb6b6612368f22e1a44f385c637ba289e75d4a33e27bd"},
 ]
 py-aiger-ptltl = [
     {file = "py-aiger-ptltl-3.1.0.tar.gz", hash = "sha256:f1bbd5b7259e6e83020e07676ed22ccf71bb3b04ad9d5cb7bf231b76ef8bf1b8"},

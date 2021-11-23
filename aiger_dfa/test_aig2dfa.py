@@ -44,14 +44,4 @@ def test_dfa2aig_smoke():
     assert dfa2.outputs == dfa1.outputs | {None}
 
     word = ('a', 'b', 'a', 'a', 'b')
-    assert dfa1.label(word) == dfa2.label(word + ('a',))
-
-
-def test_dfa2aig_smoke_lift_aig():
-    dfa1 = dict2dfa({
-        'foo': (False, {'a': 'foo', 'b': 'bar'}),
-        'bar': (True, {'a': 'foo', 'b': 'foo'})
-    }, 'foo')
-    circ1, *_ = dfa2aig(dfa1)
-    dfa2 = aig2dfa(circ1.aig)
-    len(dfa1.states()) == len(dfa2.states())
+    assert dfa1.label(word) == dfa2.label(word)

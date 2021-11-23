@@ -57,15 +57,17 @@ def aig2dfa(
     if 'inputs' not in relabels:
         relabels = relabels.set('inputs', default_encoding(circ.imap))
     if 'outputs' not in relabels:
-        relabels = relabels.set('outputs', default_encoding(circ.omap))
+        omap = circ.omap.project(['output'])
+        relabels = relabels.set('outputs', default_encoding(omap))
 
     def transition(state, action):
         action = relabels['inputs'][action]
         omap, lmap = circ(action, latches=state[1])
-        output = relabels['outputs'][pmap(omap)]
+        output = relabels['outputs'][pmap({'output': omap['output']})]
         return output, pmap(lmap)
 
     outputs = set(relabels['outputs'].values())
+
     if initial_label is None:
         outputs.add(None)
 

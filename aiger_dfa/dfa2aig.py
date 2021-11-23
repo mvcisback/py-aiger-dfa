@@ -15,14 +15,15 @@ def dfa2aig(dfa: DFA):
     Takes a dfa.DFA object and returns a tuple of:
 
     1. An aiger_bv.AIGBV circuit modeling the DFA's labeling and
-       transitions.  This circuit has 1 input, output, and latch
-       called "action", "output", and "state" respectively.
+       transitions.  This circuit has 1 input, 2 outputs, and 1 latch
+       called "action", 'prev_output', "output", "prev_state" and "state" respectively.
 
     2. A dictionary with at three entries, "inputs", "outputs", and
     "states".
 
       - Each entry is a nested dictionary.
-      - The first dictionary maps input/output/state names to encodings.
+      - The first dictionary maps input/output/state names
+        to encodings.
       - The encoding dictionary is mapping to/from dfa inputs,
         outputs, states and the corresponding aiger inputs, outputs,
         latches.
@@ -35,16 +36,19 @@ def dfa2aig(dfa: DFA):
 
     action = BV.uatom(len(dfa.inputs), 'action')
     state = BV.uatom(len(dfa.states()), 'state')
+    next_state = BV.uatom(len(dfa.states()), 'next_state')
 
-    circ = out_circ(dfa_dict, state2bv, out2bv, state)
-    circ |= transition_circ(dfa_dict, state2bv, in2bv, action, state)
-
+    circ = transition_circ(dfa_dict, state2bv, in2bv, action, state)
+    circ |= out_circ(dfa_dict, state2bv, out2bv, state, 'prev_output')
     start = state2bv[dfa.start]
 
     circ = circ.loopback({
-        "input": "state", "output": "next_state",
-        "init": start, "keep_output": False,
+        "input": "state",
+        "output": "next_state",
+        "init": start,
+        "keep_output": True,
     })
+    circ >>= out_circ(dfa_dict, state2bv, out2bv, next_state, 'output')
 
     relabels = {
         'inputs': {k: pmap({'action': v}) for k, v in in2bv.items()},
@@ -55,14 +59,16 @@ def dfa2aig(dfa: DFA):
     return circ, relabels, valid_circ(action)
 
 
-def out_circ(dfa_dict, s2bv, o2bv, state):
-    state2label = {s2bv[s]: o2bv[l] for s, (l, _) in dfa_dict.items()}
+def out_circ(dfa_dict, s2bv, o2bv, state, output):
+    state2label = {
+        BV.decode_int(s2bv[s], False): BV.decode_int(o2bv[l], False)
+        for s, (l, _) in dfa_dict.items()
+    }
     tbl = BV.lookup(
         input=state.output,
         inlen=state.size,
         in_signed=False,
-
-        output="output",
+        output=output,
         outlen=len(o2bv),            # One hot encoding.
         out_signed=False,
 
@@ -75,14 +81,16 @@ def transition_circ(dfa_dict, s2bv, a2bv, action, state):
     state_action = state.concat(action)
 
     flattened = {}
+    n_states = len(dfa_dict)
     for start, (_, mapping) in dfa_dict.items():
-        start = s2bv[start]
+        start = BV.decode_int(s2bv[start], False)
         for action, end in mapping.items():
-            end = s2bv[end]
-            action = a2bv[action]
+            end = BV.decode_int(s2bv[end], False)
+            action = BV.decode_int(a2bv[action], False)
 
-            flattened[start + action] = end
+            flattened[start | (action << n_states)] = end
 
+    print(flattened)
     tbl = BV.lookup(
         input=state_action.output,
         inlen=state_action.size,
