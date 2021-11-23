@@ -90,7 +90,6 @@ def transition_circ(dfa_dict, s2bv, a2bv, action, state):
 
             flattened[start | (action << n_states)] = end
 
-    print(flattened)
     tbl = BV.lookup(
         input=state_action.output,
         inlen=state_action.size,
