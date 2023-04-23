@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-aiger-dfa"
-version = "0.4.1"
+version = "0.4.2"
 description = "Library for moving between sequential circuits AIGs and DFAs."
 authors = ["Marcell Vazquez-Chanlatte <mvc@linux.com>"]
 repository = "https://github.com/mvcisback/py-aiger-dfa"
@@ -12,14 +12,14 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-attrs = "^21.0.0"
-bidict = "^0.21.0"
+attrs = "^22"
+bidict = "^0.22.0"
 funcy = "^1.12"
 dfa = "^4"
 py-aiger = "^6.0.0"
-py-aiger-bv = "^4.7.4"
+py-aiger-bv = "^4.7.6"
 py-aiger-ptltl = "^3.0.0"
-pyrsistent = "^0.18"
+pyrsistent = "^0.19"
 
 
 [tool.poetry.dev-dependencies]
