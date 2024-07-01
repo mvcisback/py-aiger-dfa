@@ -30,6 +30,14 @@ parsimonious = "^0.10.0"
 coverage = "^5.0.0"
 pdoc3 = "^0.9.0"
 
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version_scheme = "semver2"
+version_provider = "poetry"
+update_changelog_on_bump = true
+major_version_zero = true
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
