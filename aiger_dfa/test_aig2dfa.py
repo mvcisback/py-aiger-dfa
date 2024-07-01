@@ -1,3 +1,5 @@
+from pytest import raises
+
 from dfa import DFA, dict2dfa
 
 from aiger_dfa import dfa2aig, aig2dfa
@@ -38,6 +40,27 @@ def test_dfa2aig_smoke():
         'bar': (True, {'a': 'foo', 'b': 'foo'})
     }, 'foo')
     circ1, relabels, _ = dfa2aig(dfa1)
+    dfa2 = aig2dfa(circ1, relabels)
+
+    assert dfa2.inputs == dfa1.inputs
+    assert dfa2.outputs == dfa1.outputs | {None}
+
+    word = ('a', 'b', 'a', 'a', 'b')
+    assert dfa1.label(word) == dfa2.label(word)
+
+
+def test_dfa2aig_changed_outputs():
+    dfa1 = dict2dfa({
+        'foo': (False, {'a': 'foo', 'b': 'bar'}),
+        'bar': (True, {'a': 'foo', 'b': 'foo'})
+    }, 'foo')
+    circ1, relabels, _ = dfa2aig(dfa1)
+    circ1 = circ1['o', {'output': 'foo'}]
+
+    with raises(ValueError):
+        dfa2 = aig2dfa(circ1, relabels)
+
+    circ1 = circ1.cone('foo')
     dfa2 = aig2dfa(circ1, relabels)
 
     assert dfa2.inputs == dfa1.inputs
