@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>aiger_dfa.aig2dfa API documentation</title>
+<title>aiger_dfa.test_aig2dfa API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,96 +19,60 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>aiger_dfa.aig2dfa</code></h1>
+<h1 class="title">Module <code>aiger_dfa.test_aig2dfa</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from __future__ import annotations
+<pre><code class="python">from dfa import DFA, dict2dfa
 
-from itertools import product, repeat
-from typing import Any, Union, Optional, Tuple, Mapping, Literal
-
-import aiger
-import aiger_bv as BV
-from bidict import bidict
-from dfa import DFA
-from pyrsistent import pmap
-from pyrsistent.typing import PMap
+from aiger_dfa import dfa2aig, aig2dfa
 
 
-Kinds = Union[Literal[&#39;inputs&#39;], Literal[&#39;outputs&#39;], Literal[&#39;states&#39;]]
-Encoding = Mapping[str, bidict]  # Bijective Mapping[str, bitvector]]
-Encodings = Mapping[Kinds, Encoding]
-State = Tuple[PMap[str, Any], PMap[str, Any]]  # (prev_output, latch_val).
-
-
-def default_encoding(bmap, is_output=False):
-    enc = {}
-    flatten = (zip(repeat(k), range(1 &lt;&lt; size)) for k, size in bmap.items())
-    for elems in product(*flatten):
-        decoded = pmap({
-            k: tuple(BV.encode_int(bmap[k].size, v, signed=False))
-            for k, v in elems
-        })
-        enc[decoded] = decoded
-    return enc
-
-
-def aig2dfa(
-        circ: BV.AIGBV,
-        relabels: Encodings = pmap(),
-        initial_label: Optional[Any] = None,
-) -&gt; DFA:
-    &#34;&#34;&#34;
-    Converts an AIG circuit into a dfa.DFA object.
-
-    Note that circuits are generally Mealy Machines
-       - i.e., label depends on input &amp; state.
-
-    If the initial output is not included, the initial label is None.
-
-    Relabels is an optional mapping with &#39;inputs&#39; and &#39;outputs&#39; keys.
-     - &#39;inputs&#39; indexes a mapping from dfa inputs to (pmap) aiger inputs.
-     - &#39;outputs&#39; indexes a mapping from (pmap) aiger outputs to dfa outputs.
-     - pmap = pyrsistent.pmap
-
-    Returns:
-      A returned DFA is the Moore machine encoding of this Mealy
-      Machine. This means that the state includes the previous output.
-    &#34;&#34;&#34;
-    if isinstance(circ, aiger.AIG):
-        circ = BV.aig2aigbv(circ)
-
-    if &#39;inputs&#39; not in relabels:
-        relabels = relabels.set(&#39;inputs&#39;, default_encoding(circ.imap))
-    if &#39;outputs&#39; not in relabels:
-        omap = circ.omap.project([&#39;output&#39;])
-        relabels = relabels.set(&#39;outputs&#39;, default_encoding(omap))
-
-    def transition(state, action):
-        action = relabels[&#39;inputs&#39;][action]
-        omap, lmap = circ(action, latches=state[1])
-        output = relabels[&#39;outputs&#39;][pmap({&#39;output&#39;: omap[&#39;output&#39;]})]
-        return output, pmap(lmap)
-
-    outputs = set(relabels[&#39;outputs&#39;].values())
-
-    if initial_label is None:
-        outputs.add(None)
-
-    return DFA(
-        start=(initial_label, pmap(circ.latch2init)),
-        inputs=relabels[&#39;inputs&#39;].keys(),
-        outputs=outputs,
-        label=lambda s: s[0],
-        transition=transition,
+def test_dfa2aig():
+    dfa1 = DFA(
+        start=0,
+        inputs={0, 1},
+        label=lambda s: (s % 4) == 3,
+        transition=lambda s, c: (s + c) % 4,
     )
+    circ, relabels, _ = dfa2aig(dfa1)
+    dfa2 = aig2dfa(circ, relabels)
+    for i in range(1, 5):
+        word = (0,)*i
+        assert dfa1.label(word) == dfa2.label(word)
+
+        # Moore encoding of Mealy. Need 1 step delay.
+        word = (1,) * i
+        assert dfa1.label(word) == dfa2.label(word + (0,))
 
 
-__all__ = [&#34;aig2dfa&#34;, &#34;State&#34;]</code></pre>
+def test_dfa2aig_default_encoding():
+    dfa1 = dict2dfa({
+        &#39;foo&#39;: (False, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;bar&#39;}),
+        &#39;bar&#39;: (True, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;foo&#39;})
+    }, &#39;foo&#39;)
+    circ1, *_ = dfa2aig(dfa1)
+    dfa2 = aig2dfa(circ1)
+    assert len(dfa2.inputs) == 4
+    assert len(dfa2.outputs) == 4 + 1  # Moore Encoding.
+
+
+def test_dfa2aig_smoke():
+    dfa1 = dict2dfa({
+        &#39;foo&#39;: (False, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;bar&#39;}),
+        &#39;bar&#39;: (True, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;foo&#39;})
+    }, &#39;foo&#39;)
+    circ1, relabels, _ = dfa2aig(dfa1)
+    dfa2 = aig2dfa(circ1, relabels)
+
+    assert dfa2.inputs == dfa1.inputs
+    assert dfa2.outputs == dfa1.outputs | {None}
+
+    word = (&#39;a&#39;, &#39;b&#39;, &#39;a&#39;, &#39;a&#39;, &#39;b&#39;)
+    assert dfa1.label(word) == dfa2.label(word)</code></pre>
 </details>
 </section>
 <section>
@@ -118,74 +82,75 @@ __all__ = [&#34;aig2dfa&#34;, &#34;State&#34;]</code></pre>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="aiger_dfa.aig2dfa.aig2dfa"><code class="name flex">
-<span>def <span class="ident">aig2dfa</span></span>(<span>circ: BV.AIGBV, relabels: Encodings = pmap({}), initial_label: Optional[Any] = None) ‑> dfa.dfa.DFA</span>
+<dt id="aiger_dfa.test_aig2dfa.test_dfa2aig"><code class="name flex">
+<span>def <span class="ident">test_dfa2aig</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Converts an AIG circuit into a dfa.DFA object.</p>
-<p>Note that circuits are generally Mealy Machines
-- i.e., label depends on input &amp; state.</p>
-<p>If the initial output is not included, the initial label is None.</p>
-<p>Relabels is an optional mapping with 'inputs' and 'outputs' keys.
-- 'inputs' indexes a mapping from dfa inputs to (pmap) aiger inputs.
-- 'outputs' indexes a mapping from (pmap) aiger outputs to dfa outputs.
-- pmap = pyrsistent.pmap</p>
-<h2 id="returns">Returns</h2>
-<p>A returned DFA is the Moore machine encoding of this Mealy
-Machine. This means that the state includes the previous output.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def aig2dfa(
-        circ: BV.AIGBV,
-        relabels: Encodings = pmap(),
-        initial_label: Optional[Any] = None,
-) -&gt; DFA:
-    &#34;&#34;&#34;
-    Converts an AIG circuit into a dfa.DFA object.
+<pre><code class="python">def test_dfa2aig():
+    dfa1 = DFA(
+        start=0,
+        inputs={0, 1},
+        label=lambda s: (s % 4) == 3,
+        transition=lambda s, c: (s + c) % 4,
+    )
+    circ, relabels, _ = dfa2aig(dfa1)
+    dfa2 = aig2dfa(circ, relabels)
+    for i in range(1, 5):
+        word = (0,)*i
+        assert dfa1.label(word) == dfa2.label(word)
 
-    Note that circuits are generally Mealy Machines
-       - i.e., label depends on input &amp; state.
+        # Moore encoding of Mealy. Need 1 step delay.
+        word = (1,) * i
+        assert dfa1.label(word) == dfa2.label(word + (0,))</code></pre>
+</details>
+</dd>
+<dt id="aiger_dfa.test_aig2dfa.test_dfa2aig_default_encoding"><code class="name flex">
+<span>def <span class="ident">test_dfa2aig_default_encoding</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_dfa2aig_default_encoding():
+    dfa1 = dict2dfa({
+        &#39;foo&#39;: (False, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;bar&#39;}),
+        &#39;bar&#39;: (True, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;foo&#39;})
+    }, &#39;foo&#39;)
+    circ1, *_ = dfa2aig(dfa1)
+    dfa2 = aig2dfa(circ1)
+    assert len(dfa2.inputs) == 4
+    assert len(dfa2.outputs) == 4 + 1  # Moore Encoding.</code></pre>
+</details>
+</dd>
+<dt id="aiger_dfa.test_aig2dfa.test_dfa2aig_smoke"><code class="name flex">
+<span>def <span class="ident">test_dfa2aig_smoke</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_dfa2aig_smoke():
+    dfa1 = dict2dfa({
+        &#39;foo&#39;: (False, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;bar&#39;}),
+        &#39;bar&#39;: (True, {&#39;a&#39;: &#39;foo&#39;, &#39;b&#39;: &#39;foo&#39;})
+    }, &#39;foo&#39;)
+    circ1, relabels, _ = dfa2aig(dfa1)
+    dfa2 = aig2dfa(circ1, relabels)
 
-    If the initial output is not included, the initial label is None.
+    assert dfa2.inputs == dfa1.inputs
+    assert dfa2.outputs == dfa1.outputs | {None}
 
-    Relabels is an optional mapping with &#39;inputs&#39; and &#39;outputs&#39; keys.
-     - &#39;inputs&#39; indexes a mapping from dfa inputs to (pmap) aiger inputs.
-     - &#39;outputs&#39; indexes a mapping from (pmap) aiger outputs to dfa outputs.
-     - pmap = pyrsistent.pmap
-
-    Returns:
-      A returned DFA is the Moore machine encoding of this Mealy
-      Machine. This means that the state includes the previous output.
-    &#34;&#34;&#34;
-    if isinstance(circ, aiger.AIG):
-        circ = BV.aig2aigbv(circ)
-
-    if &#39;inputs&#39; not in relabels:
-        relabels = relabels.set(&#39;inputs&#39;, default_encoding(circ.imap))
-    if &#39;outputs&#39; not in relabels:
-        omap = circ.omap.project([&#39;output&#39;])
-        relabels = relabels.set(&#39;outputs&#39;, default_encoding(omap))
-
-    def transition(state, action):
-        action = relabels[&#39;inputs&#39;][action]
-        omap, lmap = circ(action, latches=state[1])
-        output = relabels[&#39;outputs&#39;][pmap({&#39;output&#39;: omap[&#39;output&#39;]})]
-        return output, pmap(lmap)
-
-    outputs = set(relabels[&#39;outputs&#39;].values())
-
-    if initial_label is None:
-        outputs.add(None)
-
-    return DFA(
-        start=(initial_label, pmap(circ.latch2init)),
-        inputs=relabels[&#39;inputs&#39;].keys(),
-        outputs=outputs,
-        label=lambda s: s[0],
-        transition=transition,
-    )</code></pre>
+    word = (&#39;a&#39;, &#39;b&#39;, &#39;a&#39;, &#39;a&#39;, &#39;b&#39;)
+    assert dfa1.label(word) == dfa2.label(word)</code></pre>
 </details>
 </dd>
 </dl>
@@ -206,7 +171,9 @@ Machine. This means that the state includes the previous output.</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="aiger_dfa.aig2dfa.aig2dfa" href="#aiger_dfa.aig2dfa.aig2dfa">aig2dfa</a></code></li>
+<li><code><a title="aiger_dfa.test_aig2dfa.test_dfa2aig" href="#aiger_dfa.test_aig2dfa.test_dfa2aig">test_dfa2aig</a></code></li>
+<li><code><a title="aiger_dfa.test_aig2dfa.test_dfa2aig_default_encoding" href="#aiger_dfa.test_aig2dfa.test_dfa2aig_default_encoding">test_dfa2aig_default_encoding</a></code></li>
+<li><code><a title="aiger_dfa.test_aig2dfa.test_dfa2aig_smoke" href="#aiger_dfa.test_aig2dfa.test_dfa2aig_smoke">test_dfa2aig_smoke</a></code></li>
 </ul>
 </li>
 </ul>
